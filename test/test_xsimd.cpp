@@ -5,8 +5,10 @@
 
 #include <array>
 
+#include <iostream>
 
-void mean(const std::array<float, 4>& a, const std::array<float, 4>& b, std::array<float, 4>& res) {
+
+void mean(const std::vector<float>& a, const std::vector<float>& b, std::vector<float>& res) {
   std::size_t size = res.size();
   for (std::size_t i = 0; i < size; ++i) {
     res[i] = (a[i] + b[i]) / 2;
@@ -14,17 +16,26 @@ void mean(const std::array<float, 4>& a, const std::array<float, 4>& b, std::arr
 }
 
 TEST_CASE("no vectorization") {
-  std::array<float, 4> a = { 1.5, 2.5, 3.5, 4.5 };
-  std::array<float, 4> b = { 2.5, 3.5, 4.5, 5.5 };
-  std::array<float, 4> res;
+  std::vector<float> a = { 1.5, 2.5, 3.5, 4.5, 1.5, 2.5, 3.5, 4.5, 1.5, 2.5, 3.5, 4.5 };
+  std::vector<float> b = { 2.5, 3.5, 4.5, 5.5, 2.5, 3.5, 4.5, 5.5, 2.5, 3.5, 4.5, 5.5, };
+  std::vector<float> res;
+  res.resize(12);
 
   mean(a, b, res);
 
-  REQUIRE(res.size() == 4);
+  REQUIRE(res.size() == 12);
   REQUIRE(res[0] == 2.0);
   REQUIRE(res[1] == 3.0);
   REQUIRE(res[2] == 4.0);
   REQUIRE(res[3] == 5.0);
+  REQUIRE(res[4] == 2.0);
+  REQUIRE(res[5] == 3.0);
+  REQUIRE(res[6] == 4.0);
+  REQUIRE(res[7] == 5.0);
+  REQUIRE(res[8] == 2.0);
+  REQUIRE(res[9] == 3.0);
+  REQUIRE(res[10] == 4.0);
+  REQUIRE(res[11] == 5.0);
 
   BENCHMARK("not vecorized") {
     mean(a, b, res);
@@ -57,18 +68,28 @@ void mean_aligned(const vector_type& a, const vector_type & b, vector_type& res)
 }
 
 TEST_CASE("basic vectorization") {
-  vector_type a = { 1.5, 2.5, 3.5, 4.5 };
-  vector_type b = { 2.5, 3.5, 4.5, 5.5 };
+  std::cout << "Best SIMD architecture: " <<xsimd::best_arch::name() << '\n';
+
+  vector_type a = { 1.5, 2.5, 3.5, 4.5, 1.5, 2.5, 3.5, 4.5, 1.5, 2.5, 3.5, 4.5 };
+  vector_type b = { 2.5, 3.5, 4.5, 5.5, 2.5, 3.5, 4.5, 5.5, 2.5, 3.5, 4.5, 5.5 };
   vector_type res;
-  res.resize(4);
+  res.resize(12);
 
   mean_aligned(a, b, res);
 
-  REQUIRE(res.size() == 4);
+  REQUIRE(res.size() == 12);
   REQUIRE(res[0] == 2.0);
   REQUIRE(res[1] == 3.0);
   REQUIRE(res[2] == 4.0);
   REQUIRE(res[3] == 5.0);
+  REQUIRE(res[4] == 2.0);
+  REQUIRE(res[5] == 3.0);
+  REQUIRE(res[6] == 4.0);
+  REQUIRE(res[7] == 5.0);
+  REQUIRE(res[8] == 2.0);
+  REQUIRE(res[9] == 3.0);
+  REQUIRE(res[10] == 4.0);
+  REQUIRE(res[11] == 5.0);
 
   BENCHMARK("vecorized") {
     mean_aligned(a, b, res);
